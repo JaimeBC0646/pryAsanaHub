@@ -1,44 +1,48 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, Image, TextInput, TouchableOpacity, FlatList, Modal, StyleSheet } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import HeaderLogos from '../components/HeaderLogos';
 
-const expedientes = [
-  'JOSUE GRANADOS CORTES',
-  'CARLOS MATEOS FIDENCIO',
-  'MATILDA XIMENEZ PEREZ',
-  'MARIO DEL ANGEL GERARDO',
-  'XIMENA HERNANDEZ BAUTISTA',
-  'ACOSTA GÁMEZ CELINA',
-
-];
-
 const ExpedientesScreen = ({ navigation }) => {
   const [search, setSearch] = useState('');
   const [selectedExpediente, setSelectedExpediente] = useState(null); // desplegable
-  const [arrowDirection, setArrowDirection] = useState(false);
-
+  const [expedientes, setExpedientes] = useState([]);
   const [modalVisible, setModalVisible] = useState(false);
   const [modalSolicitudVisible, setModalSolicitudVisible] = useState(false);
 
+  // Obtiene data del Webservice
+  const fetchExpedientes = async () => {
+    try {
+      const response = await fetch('https://sigaemail.host8b.me/expedientes.php');
+      const data = await response.json(); // Asumiendo que el response es JSON
+      setExpedientes(data); // Guardamos los datos en el estado
+    } catch (error) {
+      console.error('Error fetching expedientes:', error);
+    }
+  };
 
+  // Llama la funcion 'fetchExpedientes' cada que se cargue el componente
+  useEffect(() => {
+    fetchExpedientes();
+  }, []);
+
+  // Renderiza cada expediente
   const renderExpediente = ({ item, index }) => (
     <View>
       <TouchableOpacity
         style={styles.expedienteButton}
         onPress={() => setSelectedExpediente(selectedExpediente === index ? null : index)} // Toggle del menú de opciones
       >
-        <Text style={styles.expedienteText}>{item}</Text>
+        <Text style={styles.expedienteText}>{item.Alumno}</Text>
 
         <Image
           style={styles.directionArrow}
           source={
-            selectedExpediente === index 
+            selectedExpediente === index
               ? require('../assets/display_upArrow.png')
               : require('../assets/display_downArrow.png')
           }
         />
-        
       </TouchableOpacity>
 
       {selectedExpediente === index && (
@@ -61,13 +65,13 @@ const ExpedientesScreen = ({ navigation }) => {
 
   return (
     <LinearGradient colors={['#0077cc', '#e6f7ff']} style={styles.container}>
-
       <HeaderLogos />
 
       <View style={styles.header}>
-        <View style={styles.viewMessagge}><Text style={styles.welcomeMessage}>BIENVENIDO SEC. JUAN HERNANDEZ HERNANDEZ</Text></View>
+        <View style={styles.viewMessagge}>
+          <Text style={styles.welcomeMessage}>BIENVENIDO SEC. JUAN HERNANDEZ HERNANDEZ</Text>
+        </View>
       </View>
-
 
       <View style={styles.actionBar}>
         <TouchableOpacity style={styles.actionButton} onPress={() => setModalVisible(true)}>
@@ -82,9 +86,7 @@ const ExpedientesScreen = ({ navigation }) => {
         />
       </View>
 
-
       <Text style={styles.title}>EXPEDIENTES</Text>
-
 
       <FlatList
         data={expedientes}
@@ -93,6 +95,7 @@ const ExpedientesScreen = ({ navigation }) => {
         style={styles.expedienteList}
       />
 
+      {/* Modal de Acciones */}
       <Modal
         animationType="slide"
         transparent={true}
@@ -108,15 +111,12 @@ const ExpedientesScreen = ({ navigation }) => {
                   style={styles.modalClose} />
               </Text>
             </View>
-
             <Text style={styles.modalTitle}>SELECCIONE LA ACCION A REALIZAR</Text>
-
             <View style={styles.optionsContainer}>
               <TouchableOpacity style={styles.optionButton} onPress={() => navigation.navigate('Expedientes')}>
                 <Image source={require('../assets/icon_expediente.png')} style={styles.optionIcon} />
                 <Text style={styles.optionText}>REGISTRAR NUEVO EXPEDIENTE</Text>
               </TouchableOpacity>
-
               <TouchableOpacity style={styles.optionButton} onPress={() => navigation.navigate('Main')}>
                 <Image source={require('../assets/icon_logout.png')} style={styles.optionIcon} />
                 <Text style={styles.optionText}>CERRAR SESION</Text>
@@ -126,7 +126,7 @@ const ExpedientesScreen = ({ navigation }) => {
         </View>
       </Modal>
 
-
+      {/* Modal de Solicitudes */}
       <Modal
         animationType="slide"
         transparent={true}
@@ -143,36 +143,26 @@ const ExpedientesScreen = ({ navigation }) => {
                 />
               </Text>
             </View>
-
             <Text style={styles.modalTitle}>Solicitar Expediente</Text>
-
             <TextInput
               style={styles.input}
               placeholder="Nombre del Responsable"
               placeholderTextColor="#666"
-            /*value={nombreResponsable}
-            onChangeText={setNombreResponsable}*/
             />
             <TextInput
               style={styles.input}
               placeholder="Nombre del Solicitante"
               placeholderTextColor="#666"
-            /*value={nombreSolicitante}
-            onChangeText={setNombreSolicitante}*/
             />
             <TextInput
               style={styles.input}
               placeholder="Motivo de la Solicitud"
               placeholderTextColor="#666"
-            /*value={motivoSolicitud}
-            onChangeText={setMotivoSolicitud}*/
             />
-
             <View style={styles.buttonContainer}>
-              <TouchableOpacity style={styles.solicitarButton} /*onPress={handleSolicitar}*/>
+              <TouchableOpacity style={styles.solicitarButton}>
                 <Text style={styles.solicitarButtonText}>Solicitar</Text>
               </TouchableOpacity>
-
               <TouchableOpacity style={styles.cancelarButton} onPress={() => setModalSolicitudVisible(false)}>
                 <Text style={styles.cancelarButtonText}>Cancelar</Text>
               </TouchableOpacity>
@@ -180,8 +170,6 @@ const ExpedientesScreen = ({ navigation }) => {
           </View>
         </View>
       </Modal>
-
-
     </LinearGradient>
   );
 };
@@ -259,7 +247,8 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     backgroundColor: '#fff',
-    padding: 10,
+    paddingVertical: 10,
+    paddingHorizontal: 15,
     borderWidth: 3,
     borderRadius: 10,
     marginBottom: 10,
@@ -269,9 +258,9 @@ const styles = StyleSheet.create({
     color: '#333',
     fontWeight: 'bold',
   },
-  dropdownArrow: {
-    fontSize: 25,
-    color: '#333',
+  directionArrow: {
+    width: 19,
+    height: 12,
   },
 
 
