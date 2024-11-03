@@ -36,7 +36,6 @@ const LoginScreen = ({ navigation }) => {
         style={styles.logo}
       />
 
-
       <View style={styles.formContainer}>
         <Text style={styles.title}>INICIAR SESIÓN</Text>
 
@@ -52,7 +51,6 @@ const LoginScreen = ({ navigation }) => {
           value={username}
           onChangeText={setUsername}
         />
-
         <Text style={styles.lblText}>CONTRASEÑA</Text>
         <TextInput
           style={styles.input}
